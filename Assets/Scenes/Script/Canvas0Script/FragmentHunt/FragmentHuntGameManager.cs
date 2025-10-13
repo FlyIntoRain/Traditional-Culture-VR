@@ -11,6 +11,7 @@ public class FragmentHuntGameManager: MonoBehaviour
 	private bool bindExistingGridOnStart = false; // 启动时自动绑定已有Grid
 
 	[SerializeField]
+
 	private Vector2 gridCellSize = new Vector2(160, 160);
 
 	[SerializeField]
@@ -33,6 +34,9 @@ public class FragmentHuntGameManager: MonoBehaviour
 	private readonly List<FragmentCell> cells = new List<FragmentCell>();
 	private Vector2Int fragmentPos;
 	private bool gameOver;
+	
+	// 键盘导航相关（与鼠标共存）
+	private Vector2Int currentSelection = new Vector2Int(0, 0); // 当前选中的格子位置
 
 	[ContextMenu("ShowGame")]
 	public void ShowGame()
@@ -43,6 +47,9 @@ public class FragmentHuntGameManager: MonoBehaviour
 			gameLayer.gameObject.SetActive(true);
 			gameLayer.parent.gameObject.SetActive(true);
 		}
+		// 初始默认选中第一个
+		currentSelection = new Vector2Int(0, 0);
+		UpdateSelectionDisplay();
 	}
 
 	public void HideGame()
@@ -52,6 +59,7 @@ public class FragmentHuntGameManager: MonoBehaviour
 			gameLayer.gameObject.SetActive(false);
             gameLayer.parent.gameObject.SetActive(false);
         }
+		HideAllBorders();
 	}
 
 	public void RestartGame()
@@ -62,6 +70,9 @@ public class FragmentHuntGameManager: MonoBehaviour
 		{
 			cells[i].ResetVisual(colorDefault, true);
 		}
+		// 重置选中状态
+		currentSelection = new Vector2Int(0, 0);
+		UpdateSelectionDisplay();
 	}
 
 	private void Start()
@@ -117,7 +128,7 @@ public class FragmentHuntGameManager: MonoBehaviour
 			button.transition = Selectable.Transition.ColorTint;
 			var colors = button.colors;
 			colors.highlightedColor = new Color(1f, 1f, 1f, 0.9f);
-			colors.pressedColor = new Color(1f, 1f, 1f, 0.8f);
+			colors.pressedColor = new Color(0.5f, 0.5f, 0.5f, 0.8f);
 			button.colors = colors;
 
 			var cell = child.GetComponent<FragmentCell>();
@@ -136,6 +147,9 @@ public class FragmentHuntGameManager: MonoBehaviour
 		if (gameOver) return;
 
 		var pos = cell.GridPosition;
+		// 同步键盘选中到被点击的格子，确保只有一个选中边框
+		currentSelection = pos;
+		UpdateSelectionDisplay();
 		if (pos == fragmentPos)
 		{
 			cell.SetColor(colorCorrect);
@@ -164,6 +178,96 @@ public class FragmentHuntGameManager: MonoBehaviour
 			if (cells[i] == null) continue;
 			if (except != null && cells[i] == except) continue;
 			cells[i].SetInteractable(false);
+		}
+	}
+	
+	// 键盘输入处理（与鼠标共存，始终可用）
+	private void Update()
+	{
+		if (gameOver) return;
+		
+		HandleKeyboardInput();
+	}
+	
+	private void HandleKeyboardInput()
+	{
+		Vector2Int newSelection = currentSelection;
+		
+		// WASD移动
+		if (Input.GetKeyDown(KeyCode.W))
+		{
+			newSelection.y = Mathf.Max(0, newSelection.y - 1);
+		}
+		else if (Input.GetKeyDown(KeyCode.S))
+		{
+			newSelection.y = Mathf.Min(2, newSelection.y + 1);
+		}
+		else if (Input.GetKeyDown(KeyCode.A))
+		{
+			newSelection.x = Mathf.Max(0, newSelection.x - 1);
+		}
+		else if (Input.GetKeyDown(KeyCode.D))
+		{
+			newSelection.x = Mathf.Min(2, newSelection.x + 1);
+		}
+		
+		// Enter确认点击
+		if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
+		{
+			ClickCurrentSelection();
+			return;
+		}
+		
+		// 更新选中位置
+		if (newSelection != currentSelection)
+		{
+			currentSelection = newSelection;
+			UpdateSelectionDisplay();
+		}
+	}
+	
+	private void ClickCurrentSelection()
+	{
+		FragmentCell targetCell = GetCellAtPosition(currentSelection);
+		if (targetCell != null)
+		{
+			OnCellClicked(targetCell);
+		}
+	}
+	
+	private FragmentCell GetCellAtPosition(Vector2Int pos)
+	{
+		for (int i = 0; i < cells.Count; i++)
+		{
+			if (cells[i] != null && cells[i].GridPosition == pos)
+			{
+				return cells[i];
+			}
+		}
+		return null;
+	}
+	
+	private void UpdateSelectionDisplay()
+	{
+		// 隐藏所有边框
+		HideAllBorders();
+		
+		// 显示当前选中格子的边框
+		FragmentCell selectedCell = GetCellAtPosition(currentSelection);
+		if (selectedCell != null)
+		{
+			selectedCell.SetSelected(true);
+		}
+	}
+	
+	private void HideAllBorders()
+	{
+		for (int i = 0; i < cells.Count; i++)
+		{
+			if (cells[i] != null)
+			{
+				cells[i].SetSelected(false);
+			}
 		}
 	}
 }

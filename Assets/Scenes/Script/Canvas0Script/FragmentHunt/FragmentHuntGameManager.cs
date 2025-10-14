@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections; // 添加这个命名空间以使用协程
 
 public class FragmentHuntGameManager : MonoBehaviour
 {
@@ -30,6 +31,10 @@ public class FragmentHuntGameManager : MonoBehaviour
 
     [SerializeField]
     private RectTransform gameLayer;
+
+    [SerializeField]
+    private float gameEndDelay = 2f; // 游戏结束后的延迟时间（秒）
+
     private GridLayoutGroup gridLayout;
     private readonly List<FragmentCell> cells = new List<FragmentCell>();
     private Vector2Int fragmentPos;
@@ -155,13 +160,25 @@ public class FragmentHuntGameManager : MonoBehaviour
             cell.SetSprite(spriteCorrect);
             gameOver = true;
             DisableAllCellsExcept(null);
-            HideGame();
             Debug.Log("找到碎片，游戏结束！");
+
+            // 使用协程延迟关闭游戏界面
+            StartCoroutine(DelayedHideGame());
             return;
         }
 
         bool isAdjacent = IsOrthogonallyAdjacent(pos, fragmentPos);
         cell.SetSprite(isAdjacent ? spriteNear : spriteFar);
+    }
+
+    // 延迟关闭游戏的协程
+    private IEnumerator DelayedHideGame()
+    {
+        // 等待指定的延迟时间
+        yield return new WaitForSeconds(gameEndDelay);
+
+        // 延迟结束后隐藏游戏
+        HideGame();
     }
 
     private static bool IsOrthogonallyAdjacent(Vector2Int a, Vector2Int b)

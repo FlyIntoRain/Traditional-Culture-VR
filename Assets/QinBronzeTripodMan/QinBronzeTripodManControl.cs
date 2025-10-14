@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using System.Linq;
-
+using UnityEngine.UI;
 
 public class QinBronzeTripodMancontrol : MonoBehaviour
 {
@@ -26,6 +26,9 @@ public class QinBronzeTripodMancontrol : MonoBehaviour
     // 自动转向速度
     public float faceTurnSpeed = 3f;
 
+    // 新增：追踪是否靠近NPC但未进入对话
+    private bool isNearNPC = false;
+    private bool enterKeyPressedThisFrame = false;
 
     void Start()
     {
@@ -36,6 +39,15 @@ public class QinBronzeTripodMancontrol : MonoBehaviour
 
     void Update()
     {
+        // 重置每帧的Enter键状态
+        enterKeyPressedThisFrame = false;
+
+        // 检测Enter键输入
+        if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
+        {
+            enterKeyPressedThisFrame = true;
+        }
+
         // 若在与 NPC 对话状态中，则禁止其他控制，并持续朝向 NPC
         if (isAruging)
         {
@@ -50,6 +62,17 @@ public class QinBronzeTripodMancontrol : MonoBehaviour
             }
 
             return;
+        }
+
+  
+        if (isNearNPC && currentNPC != null && !isAruging)
+        { 
+            // 检测Enter键进入对话
+            if (enterKeyPressedThisFrame)
+            {
+                EnterTalking();
+                return;
+            }
         }
 
         bool anyAction = false;
@@ -248,19 +271,60 @@ public class QinBronzeTripodMancontrol : MonoBehaviour
 
     private void HandleNPCInteraction()
     {
+        bool foundNPC = false;
+        MonoBehaviour previousNPC = currentNPC;
+
         foreach (var npc in allNPCs)
         {
             if (npc.HasTalked) continue;
             float dist = Vector3.Distance(transform.position, ((MonoBehaviour)npc).transform.position);
             if (dist <= talkRange && !isAruging)
             {
+                // 如果切换到新的NPC，隐藏上一个NPC的按钮
+                if (currentNPC != (MonoBehaviour)npc && previousNPC != null)
+                {
+                    // 尝试获取上一个NPC的按钮并隐藏
+                    npc1Control prevNPCControl = previousNPC.GetComponent<npc1Control>();
+                    if (prevNPCControl != null && prevNPCControl.dialogue != null)
+                    {
+                        prevNPCControl.dialogue.gameObject.SetActive(false);
+                    }
+                }
+
                 currentNPC = (MonoBehaviour)npc;
-                EnterTalking();
+                isNearNPC = true; // 标记为靠近NPC
+                foundNPC = true;
+
+                // 显示按钮但不立即进入对话
+                npc1Control npcControl = currentNPC.GetComponent<npc1Control>();
+                if (npcControl != null && npcControl.dialogue != null)
+                {
+                    npcControl.dialogue.gameObject.SetActive(true);
+                }
+                else
+                {
+                    Debug.LogError("未找到对话按钮: " + currentNPC.gameObject.name);
+                }
                 break;
             }
         }
-    }
 
+        // 如果没有找到附近的NPC，重置状态
+        if (!foundNPC)
+        {
+            isNearNPC = false;
+            // 隐藏当前NPC的按钮（如果有）
+            if (currentNPC != null)
+            {
+                npc1Control npcControl = currentNPC.GetComponent<npc1Control>();
+                if (npcControl != null && npcControl.dialogue != null)
+                {
+                    npcControl.dialogue.gameObject.SetActive(false);
+                }
+                currentNPC = null;
+            }
+        }
+    }
 
     private void EnterTalking()
     {

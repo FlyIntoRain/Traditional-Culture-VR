@@ -1,9 +1,12 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 public class npc1Control : MonoBehaviour, INPCInteractable
 {
     private Animator m_Anim;
     public bool HasTalked { get; set; } = false;
+    [SerializeField]
+    public Button dialogue;
 
     // 对话状态
     private bool isTalking = false;

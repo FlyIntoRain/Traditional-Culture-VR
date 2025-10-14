@@ -8,22 +8,22 @@ ModelImporter:
       type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
       name: texture_pbr_20250901
-    second: {fileID: 2800000, guid: 8811230d35e696e438c29178097db02e, type: 3}
+    second: {fileID: 2800000, guid: 285378825db6c214781f43555d5f47d2, type: 3}
   - first:
       type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
       name: texture_pbr_20250901_metallic
-    second: {fileID: 2800000, guid: 700bc6a181826f042af86c516ee04b64, type: 3}
+    second: {fileID: 2800000, guid: b223ffe5a6d494747a5a2f792d7e33e5, type: 3}
   - first:
       type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
       name: texture_pbr_20250901_normal
-    second: {fileID: 2800000, guid: 92b6f34aa9f6bae4abf194efa6601e9f, type: 3}
+    second: {fileID: 2800000, guid: da65e4040051f924ea642cb2b6f6a6fa, type: 3}
   - first:
       type: UnityEngine:Texture2D
       assembly: UnityEngine.CoreModule
       name: texture_pbr_20250901_roughness
-    second: {fileID: 2800000, guid: 0be1fe89d3a08654c8493b7c4b26978b, type: 3}
+    second: {fileID: 2800000, guid: f33df2eb636aa2047bf7009639ac4bb6, type: 3}
   materials:
     materialImportMode: 2
     materialName: 0

@@ -7,6 +7,8 @@ public class npc1Control : MonoBehaviour, INPCInteractable
     public bool HasTalked { get; set; } = false;
     [SerializeField]
     public Button dialogue;
+    [SerializeField]
+    public GameObject taskWarning;
 
     // 对话状态
     private bool isTalking = false;
@@ -25,6 +27,14 @@ public class npc1Control : MonoBehaviour, INPCInteractable
 
     void Update()
     {
+        if (!HasTalked)
+        {
+            taskWarning.SetActive(true) ;
+        }
+        else
+        {
+            taskWarning.SetActive(false);
+        }
         // 如果在对话状态，持续面向主角
         if (isTalking && talkingTarget != null)
         {

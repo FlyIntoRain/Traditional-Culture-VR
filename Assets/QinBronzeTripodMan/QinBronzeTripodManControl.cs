@@ -262,7 +262,7 @@ public class QinBronzeTripodMancontrol : MonoBehaviour
     }
 
     // ======= 与NPC交互逻辑 =======
-    public float talkRange = 1.5f;
+    public float talkRange = 10f;
 
     void FixedUpdate()
     {
@@ -283,28 +283,15 @@ public class QinBronzeTripodMancontrol : MonoBehaviour
                 // 如果切换到新的NPC，隐藏上一个NPC的按钮
                 if (currentNPC != (MonoBehaviour)npc && previousNPC != null)
                 {
-                    // 尝试获取上一个NPC的按钮并隐藏
-                    npc1Control prevNPCControl = previousNPC.GetComponent<npc1Control>();
-                    if (prevNPCControl != null && prevNPCControl.dialogue != null)
-                    {
-                        prevNPCControl.dialogue.gameObject.SetActive(false);
-                    }
+                    HideNPCButton(previousNPC); // 使用统一的方法隐藏上一个NPC的按钮
                 }
 
                 currentNPC = (MonoBehaviour)npc;
-                isNearNPC = true; // 标记为靠近NPC
+                isNearNPC = true;
                 foundNPC = true;
 
-                // 显示按钮但不立即进入对话
-                npc1Control npcControl = currentNPC.GetComponent<npc1Control>();
-                if (npcControl != null && npcControl.dialogue != null)
-                {
-                    npcControl.dialogue.gameObject.SetActive(true);
-                }
-                else
-                {
-                    Debug.LogError("未找到对话按钮: " + currentNPC.gameObject.name);
-                }
+                // 显示当前NPC的按钮
+                ShowNPCButton(currentNPC);
                 break;
             }
         }
@@ -316,11 +303,7 @@ public class QinBronzeTripodMancontrol : MonoBehaviour
             // 隐藏当前NPC的按钮（如果有）
             if (currentNPC != null)
             {
-                npc1Control npcControl = currentNPC.GetComponent<npc1Control>();
-                if (npcControl != null && npcControl.dialogue != null)
-                {
-                    npcControl.dialogue.gameObject.SetActive(false);
-                }
+                HideNPCButton(currentNPC);
                 currentNPC = null;
             }
         }
@@ -354,6 +337,73 @@ public class QinBronzeTripodMancontrol : MonoBehaviour
                 npc?.ExitTalking();
             }
         }
+    }
+    // 统一的显示NPC按钮方法
+    private void ShowNPCButton(MonoBehaviour npc)
+    {
+        if (npc == null) return;
+
+        // 检查所有可能的NPC类型
+        npc1Control npc1 = npc.GetComponent<npc1Control>();
+        npc2Control npc2= npc.GetComponent<npc2Control>();
+        npc3Control npc3 = npc.GetComponent<npc3Control>();
+        npc4Control npc4 = npc.GetComponent<npc4Control>();
+
+        if (npc1 != null)
+        {
+            if (npc1.dialogue != null)
+            {
+                npc1.dialogue.gameObject.SetActive(true);
+            }
+            else
+            {
+                Debug.LogError("未找到npc1对话按钮: " + npc.gameObject.name);
+            }
+        }
+        else if (npc4 != null)
+        {
+            if (npc4.dialogue != null)
+            {
+                npc4.dialogue.gameObject.SetActive(true);
+            }
+            else
+            {
+                Debug.LogError("未找到npc4对话按钮: " + npc.gameObject.name);
+            }
+        }
+        else
+        {
+            Debug.LogError("未知的NPC类型: " + npc.gameObject.name);
+        }
+    }
+
+    // 统一的隐藏NPC按钮方法
+    private void HideNPCButton(MonoBehaviour npc)
+    {
+        if (npc == null) return;
+
+        // 检查所有可能的NPC类型
+        npc1Control npc1 = npc.GetComponent<npc1Control>();
+        npc2Control npc2 = npc.GetComponent<npc2Control>();
+        npc3Control npc3 = npc.GetComponent<npc3Control>();
+        npc4Control npc4 = npc.GetComponent<npc4Control>();
+        // 可以继续添加其他NPC类型...
+
+        if (npc1 != null)
+        {
+            if (npc1.dialogue != null)
+            {
+                npc1.dialogue.gameObject.SetActive(false);
+            }
+        }
+        else if (npc4 != null)
+        {
+            if (npc4.dialogue != null)
+            {
+                npc4.dialogue.gameObject.SetActive(false);
+            }
+        }
+        // 可以继续添加其他NPC类型...
     }
 
     // ================= 面向 NPC 功能 =================
